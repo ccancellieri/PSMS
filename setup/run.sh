@@ -14,7 +14,7 @@ for i in `ls *.gpx`; do
 	if [ ! $? -eq 0 ]; then
 		echo "Error on file: $i"
 	else
-		psql -d gis -U postgres -c "SELECT * FROM gpxImporter();"
+		psql -d gis -U postgres -c "SELECT * FROM gpxImporter(false);"
 	fi
 #	ogr2ogr -f postgresql -update -append PG:"dbname='gis' host='168.202.25.219' port='5432' user='postgres' password='postgres'" $i;
 #	ogr2ogr -lco TEMPORARY=YES  -f PGDump $i.sql $i;
@@ -24,3 +24,5 @@ for i in `ls *.gpx`; do
 	
 #	read -p "File $i processed, press [Enter]"
 done
+# refresh materialized views
+psql -d gis -U postgres -c "SELECT * FROM gpxImporter(true);"
