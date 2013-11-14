@@ -36,6 +36,12 @@ IF (isArea) THEN
 		wkb_geometry = tracks.wkb_geometry
 	FROM tracks
 	WHERE tracks.name=area_id;
+
+	-- CLOSE NOT CLOSED GEOM
+	UPDATE data_area
+		SET wkb_geometry = ST_AddPoint(ST_LineMerge(wkb_geometry), ST_StartPoint(wkb_geometry))
+		WHERE ST_IsClosed(wkb_geometry) = false;
+	
 ELSE
 	RAISE NOTICE 'Table "data_area" does not exists: creating it.';
 
@@ -55,10 +61,10 @@ ELSE
 	  ADD CONSTRAINT data_area_id PRIMARY KEY (fid);
 	  
 	CREATE INDEX data_area_geom_idx
-	  ON area USING gist (wkb_geometry);
+		ON data_area USING gist (wkb_geometry);
 	  
 	CREATE INDEX data_area_idx
-	   ON area USING hash (area_id varchar_ops);
+		ON data_area USING hash (area_id varchar_ops);
 
 END IF;
 
@@ -79,6 +85,11 @@ IF (isPlot) THEN
 		wkb_geometry = tracks.wkb_geometry
 	FROM tracks
 	WHERE tracks.name=plot_id;
+
+	-- CLOSE NOT CLOSED GEOM
+	UPDATE data_plot
+		SET wkb_geometry = ST_AddPoint(ST_LineMerge(wkb_geometry), ST_StartPoint(wkb_geometry))
+		WHERE ST_IsClosed(wkb_geometry) = false;
 ELSE
 	RAISE NOTICE 'Table "data_plot" does not exists: creating it.';
 
@@ -98,13 +109,13 @@ ELSE
 	  ADD CONSTRAINT data_plot_id PRIMARY KEY (fid);
 	  
 	CREATE INDEX data_plot_geom_idx
-	  ON plot USING gist (wkb_geometry);
+		ON data_plot USING gist (wkb_geometry);
 	  
 	CREATE INDEX data_plot_area_idx
-	   ON plot USING hash (area_id varchar_ops);
+		ON data_plot USING hash (area_id varchar_ops);
 	   
 	CREATE INDEX data_plot_idx
-	   ON plot USING hash (plot_id varchar_ops);
+		ON data_plot USING hash (plot_id varchar_ops);
 
 END IF;
 
@@ -177,7 +188,19 @@ END
 $BODY$
 LANGUAGE 'plpgsql' ;
 
--- SELECT * FROM gpxImporter();
+-- SELECT * FROM gpxImporter(false);
 -- SELECT * from Tracks LIMIT 1
 -- SELECT st_area(ST_Transform(ST_ConcaveHull(wkb_geometry,0.5,false),3857))/10000,st_area(ST_Transform(ST_ConvexHull(wkb_geometry),3857))/10000 from Tracks WHERE ogc_fid=1
 -- SELECT st_area(ST_Transform(ST_ConcaveHull(wkb_geometry,0.1,true),3857))/10000,st_area(ST_Transform(ST_ConvexHull(wkb_geometry),3857))/10000 from Tracks WHERE ogc_fid=1
+-- select * from plot_concave where area_id='PIA-3-2-1'
+-- DROP VIEW plot_polyon;
+CREATE OR REPLACE VIEW area_polygon (fid, area_id, hectares, wkb_geometry)
+	AS
+	SELECT fid, area_id, st_area(ST_Transform(ST_MakePolygon(wkb_geometry),3857))/10000 AS hectares, ST_MakePolygon(wkb_geometry) AS wkb_geometry FROM data_area;
+
+CREATE OR REPLACE VIEW plot_polygon (fid, plot_id, area_id, hectares, wkb_geometry)
+	AS
+	SELECT fid, plot_id, area_id, st_area(ST_Transform(ST_MakePolygon(wkb_geometry),3857))/10000 AS hectares, ST_MakePolygon(wkb_geometry) AS wkb_geometry FROM data_plot;
+
+	
+	
