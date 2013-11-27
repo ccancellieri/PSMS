@@ -1,8 +1,9 @@
-package org.devild.gis.test;
+package it.geosolutions.gis;
+
+import it.geosolutions.gis.util.ShapefileUtils;
 
 import java.io.File;
 
-import org.devild.gis.util.ShapefileUtils;
 import org.geotools.data.FileDataStore;
 import org.geotools.data.FileDataStoreFinder;
 import org.geotools.data.simple.SimpleFeatureCollection;

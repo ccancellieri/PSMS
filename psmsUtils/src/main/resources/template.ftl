@@ -50,7 +50,9 @@
 				<#assign geometry=feature.getProperty("geometry") >
 			<#if geometry.getType().getBinding()?ends_with("Point")>
 				<Point>
-					<coordinates>${geometry.getValue()?substring(7,geometry.getValue()?index_of(")"))?replace(" ",",")}</coordinates>
+				    <coordinates>${tool.getOrdinate(1,feature)},${tool.getOrdinate(0,feature)}</coordinates>
+				
+					<#--coordinates>${geometry.getValue()?substring(7,geometry.getValue()?index_of(")"))?replace(" ",",")}</coordinates-->
 				</Point>
 			<#else>
 				<!-- FAKE GEOM TO BUILD VALID KML -->
