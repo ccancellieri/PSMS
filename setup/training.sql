@@ -24,9 +24,8 @@ delete FROM training where store_name='store_name'
 
 -- select *from training where latitude<>'' AND longitude<>''
 CREATE TABLE
-	psms_training
-AS
-
+	psms_training 
+AS 
 SELECT 
 	store_name,
 	site_name,
@@ -43,3 +42,6 @@ FROM
 	training
 WHERE
 	latitude<>'' AND longitude<>''
+;
+
+select * from gis.public.psms_training
